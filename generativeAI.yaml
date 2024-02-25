@@ -1,0 +1,40 @@
+### THIS IS AN AUTOMATION ###
+### READ MORE: https://www.home-assistant.io/integrations/google_generative_ai_conversation/ ###
+
+alias: Generative AI / Notification
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.xxxxx ### Add you trigger. Eg. door/window contact sensor.
+    from: "off"
+    to: "on"
+condition: []
+action:
+  - service: camera.snapshot
+    metadata: {}
+    data:
+      filename: /config/www/images/snapshot/visitor.jpg  ### make sure you have the folder
+    target:
+      entity_id: camera.xxxxx  ### Your camera entity that you want to capture
+  - service: google_generative_ai_conversation.generate_content
+    metadata: {}
+    data:
+      image_filename: /config/www/images/snapshot/visitor.jpg
+      prompt: >-                                     ### Prompt for AI to generate text
+        Very briefly describe what you see in this image, but only if the image
+        has a person or a dog in it,  watching my front gate security camera.
+        Your message needs to be short to fit in a phone notification. 
+    response_variable: generated_content
+  - service: notify.mobile_app_kims_iphone
+    data:
+      message: " {{ generated_content.text }} "
+      data:
+        entity_id: camera.xxxx ### Your camera entity
+        push:
+          category: camera
+        actions:
+          - action: URI
+            title: Open cameras
+            url: https://hoomeassistant.local:8123/lovelace-phone/cameras  ##¤ URL to get to cameras. 
+mode: single

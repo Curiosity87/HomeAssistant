@@ -1,0 +1,48 @@
+### AUTOMATION FOR MOTION SENSOR AND PRESENCE DETECTION ###
+### Tiggers on, on motion, if no motion or presence detection for 1 hour between 5am and 11pm lights turn off. ###
+
+alias: "Motion sensor on / off daytime "
+description: Trigger lights in kicthen and livingroom from motion sensors.
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.motion_sensors   ### YOUR MOTION SENSOR
+    to: "on"
+    id: Motion detected 2
+  - platform: state
+    entity_id:
+      - binary_sensor.livingroom_presence_detection_occupancy  ### YOUR PRESENCE SENSOR
+    to: "on"
+    id: Motion detected
+  - platform: state
+    entity_id:
+      - binary_sensor.livingroom_presence_detection_occupancy ### YOUR PRESENCE SENSOR
+    to: "off"
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+condition:
+  - condition: time
+    after: "05:00:00"      ### CHANGE TIME
+    before: "22:59:50"     ### CHANGE TIME
+action:
+  - if:
+      - condition: trigger
+        id:
+          - Motion detected    ### IF PRESENCE DETECTED LIGHTS STAY ON
+    then:
+      - service: light.turn_on
+        target:
+          entity_id:
+            - light.living_room_lights   ### LIGHTS TO TURN ON 
+            - light.kitchen_ceiling
+        data: {}
+    else:
+      - service: light.turn_off
+        target:
+          entity_id:
+            - light.living_room_lights
+            - light.kitchen_ceiling
+        data: {}
+mode: single
